@@ -1,0 +1,32 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Lato:100,300,600"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Match Game</title>
+  </head>
+  <body>
+    <header>
+      <h1 class="game__title">Match Game</h1>
+    </header>
+    <main>
+      <div class="game__wrapper">
+        <div class="game__control">
+          <button class="btn btn-reload">Reload</button>
+          <div class="game__timer">00:00</div>
+          <button class="btn btn-pause">Pause</button>
+        </div>
+        <div class="game__container"></div>
+      </div>
+    </main>
+    <footer class="game__copyright">
+      <p class="game__copyright_text">&#9825; 2023 Yuliia Yarosheva</p>
+    </footer>
+  </body>
+  <script src="./anime.min.js"></script>
+  <script src="./gameLogic.js"></script>
+</html>

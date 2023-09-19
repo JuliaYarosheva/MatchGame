@@ -1,0 +1,210 @@
+body {
+  background: linear-gradient(to left top, #bbd4ce, #679186);
+  background-size: cover;
+  background-position: center;
+  font-family: Lato;
+  font-weight: 300;
+  color: #5e6a67;
+  margin: 20px 150px 40px;
+  padding: 0 30px;
+}
+
+.game__title {
+  font-size: 38px;
+  text-align: center;
+  padding: 15px 40px;
+  margin: 5px;
+}
+
+.game__control {
+  display: flex;
+  justify-content: space-evenly;
+  margin: 25px auto;
+  border-bottom: 2px solid #5e6a67;
+}
+
+.btn {
+  width: 120px;
+  height: 45px;
+  font-family: Lato;
+  font-size: 18px;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 1px 1px 3px #555;
+  margin: 15px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.game__wrapper.light .btn {
+  background: #f9b2a9;
+  color: #5e6a67;
+}
+
+.game__wrapper.dark .btn {
+  background: #264e70;
+  color: #fdebd3;
+}
+
+.game__wrapper.light .btn:hover {
+  background: #fdebd3;
+}
+
+.game__wrapper.dark .btn:hover {
+  background: #93a7b8;
+}
+
+.game__timer {
+  width: 120px;
+  height: 45px;
+  font-size: 24px;
+  line-height: 45px;
+  border: 2px solid;
+  border-radius: 15px;
+  box-shadow: 1px 1px 3px #555;
+  margin: 15px;
+  text-align: center;
+  cursor: default;
+}
+
+.game__wrapper.light .game__timer {
+  color: #5e6a67;
+  border-color: #f9b2a9;
+}
+
+.game__wrapper.dark .game__timer {
+  color: #fdebd3;
+  border-color: #264e70;
+}
+
+.game__container {
+  display: flex;
+  justify-content: center;
+}
+
+.game__board {
+  display: flex;
+  flex-wrap: wrap;
+  border: 2px solid;
+  border-radius: 25px;
+  padding: 30px;
+  box-shadow: 1px 1px 3px #555;
+  position: relative;
+}
+
+.game__wrapper.light .game__board {
+  border-color: #f9b2a9;
+}
+
+.game__wrapper.dark .game__board {
+  border-color: #264e70;
+}
+
+.game__card {
+  width: 100%;
+  height: 100%;
+  perspective: 1000px;
+}
+
+.game__wrapper.light
+  .game__card.disabled
+  > .game__card_inner
+  > .game__card_back {
+  background: #bbd4ce;
+  color: #5e6a67;
+  cursor: default;
+}
+
+.game__wrapper.dark
+  .game__card.disabled
+  > .game__card_inner
+  > .game__card_back {
+  background: #bbd4ce;
+  color: #5e6a67;
+  cursor: default;
+}
+
+.game__card_inner {
+  width: 100%;
+  height: 100%;
+  transition: 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.game__card_front,
+.game__card_back {
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: -webkit-fill-available;
+  height: -webkit-fill-available;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px;
+  box-shadow: 1px 1px 3px #555;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.game__wrapper.light .game__card_front {
+  background: #f9b2a9;
+  color: #5e6a67;
+}
+
+.game__wrapper.dark .game__card_front {
+  background: #264e70;
+  color: #fdebd3;
+}
+
+.game__wrapper.light .game__card_front:hover {
+  background: #fdebd3;
+}
+
+.game__wrapper.dark .game__card_front:hover {
+  background: #93a7b8;
+}
+
+.game__wrapper.light .game__card_back {
+  transform: rotateY(180deg);
+  background: #fdd9d4;
+  color: #5e6a67;
+}
+
+.game__wrapper.dark .game__card_back {
+  transform: rotateY(180deg);
+  background: #5e6a67;
+  color: #fdebd3;
+}
+
+.game__grey-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 25px;
+  background-color: #5e6a67;
+  opacity: 0;
+  z-index: -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fdebd3;
+  font-size: 64px;
+  text-transform: uppercase;
+}
+
+.game__copyright {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game__copyright_text {
+  font-size: 12px;
+  padding-top: 20px;
+}
