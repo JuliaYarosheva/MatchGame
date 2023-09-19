@@ -1,10 +1,3 @@
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
 class MatchGrid {
   //Set game data
   constructor(width, height, cols, rows, time, theme) {
@@ -21,10 +14,20 @@ class MatchGrid {
     this.gamePaused = false;
   }
 
+  //Method to set the game theme
   setTheme() {
     document.querySelector(".game__wrapper").classList.add(this.theme);
   }
 
+  //Method to shuffle the unique id pairs
+  shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  //Method to create game matrix
   createGameMatrix() {
     //Get number of game cards
     this.cellsAmount = this.cols * this.rows;
@@ -33,11 +36,12 @@ class MatchGrid {
     //Get unique id pairs for game cards (game cards / 2), shuffle them in random order
     const uniqueIds = [...Array(this.cellsAmount / 2)].map((el, i) => i + 1);
     const uniqueIdPairs = [...uniqueIds, ...uniqueIds];
-    shuffleArray(uniqueIdPairs);
+    this.shuffleArray(uniqueIdPairs);
 
     return uniqueIdPairs;
   }
 
+  //Method to create game board with cards
   createGameBoard() {
     const ids = this.createGameMatrix();
 
@@ -65,9 +69,11 @@ class MatchGrid {
     document.querySelector(".game__container").innerHTML = boardMarkup;
   }
 
+  //Method to start game timer
   startTimer() {
     let time = this.time;
     const labelTimer = document.querySelector(".game__timer");
+
     const tick = function () {
       const min = String(Math.trunc(time / 60)).padStart(2, 0);
       const sec = String(time % 60).padStart(2, 0);
@@ -94,20 +100,24 @@ class MatchGrid {
     this.timerId = setInterval(tick, 1000);
   }
 
+  //Method to pause and resume timer
   pauseResumeTimer() {
     if (this.gamePaused === false) {
+      //If timer is going - pause the timer and disable the activity area
       this.gamePaused = true;
       clearInterval(this.timerId);
       document.querySelector(".game__grey-layer").style.opacity = 0.7;
       document.querySelector(".game__grey-layer").style.zIndex = 10;
       document.querySelector(".game__grey-layer").innerHTML = `<h2>Paused</h2>`;
     } else {
+      //If timer is paused - resume the timer and enable the activity area
       this.gamePaused = false;
       document.querySelector(".game__grey-layer").style.opacity = 0;
       document.querySelector(".game__grey-layer").style.zIndex = -1;
     }
   }
 
+  //Method to end the game (clear timer, remove game board)
   endGame() {
     document.querySelector(".game__container").innerHTML = "";
     if (this.timerId !== 0) {
@@ -115,6 +125,7 @@ class MatchGrid {
     }
   }
 
+  //Method to animate card flip
   animation(elem, playing) {
     if (playing) return;
 
@@ -132,25 +143,30 @@ class MatchGrid {
     });
   }
 
+  //Method to handle click on game card
   handleCardClick(e) {
+    //Animate the card flip
     const animation = this.animation(
       e.currentTarget.querySelector(".game__card_inner"),
       false
     );
     animation.play();
+    //Indicate the active card
     e.currentTarget.classList.add("active");
-
     const dataId = e.currentTarget.dataset.id;
     const dataCardId = e.currentTarget.dataset.cardid;
 
+    //Check if card are matching
     this.checkCardsMatch(Number(dataId), Number(dataCardId));
   }
 
+  //Method to check if cards are matching and handle result
   checkCardsMatch(currentId, selectedCardThumbId) {
     if (this.selectedCardId === null) {
       this.selectedCardId = currentId;
       this.selectedCardThumbId = selectedCardThumbId;
     } else if (
+      //If cards are matching, disable them and remove active state
       this.selectedCardId === currentId &&
       this.selectedCardThumbId !== selectedCardThumbId
     ) {
@@ -166,6 +182,7 @@ class MatchGrid {
 
           const disabled = document.querySelectorAll(".disabled").length;
 
+          //If all cards are matched - disable the activity area and stop the game
           if (disabled === this.cellsAmount) {
             clearInterval(this.timerId);
             document.querySelector(".game__grey-layer").style.opacity = 0.7;
@@ -179,6 +196,7 @@ class MatchGrid {
       this.selectedCardId = null;
       this.selectedCardThumbId = null;
     } else {
+      //If cards are NOT matching, flip them back and remove active state
       const elements = document.querySelectorAll(".active");
 
       setTimeout(() => {
@@ -196,6 +214,7 @@ class MatchGrid {
     }
   }
 
+  //Method to add events to interactive elements
   addEvents() {
     document
       .querySelector(".btn-reload")
@@ -221,6 +240,7 @@ class MatchGrid {
       .addEventListener("click", () => this.pauseResumeTimer());
   }
 
+  //Method to start the game
   initGame() {
     this.setTheme();
     this.endGame();
@@ -239,5 +259,4 @@ class MatchGrid {
 // theme: String (dark, light)
 
 const gameGrid = new MatchGrid(600, 600, 5, 5, 600, "light");
-
 gameGrid.initGame();
