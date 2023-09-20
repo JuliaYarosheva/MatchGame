@@ -15,15 +15,16 @@ class MatchGrid {
     selectedCardThumbId: null,
     timerId: 0,
     gamePaused: false,
-    pauseTime: 0,
+    pauseTime: this.time,
+    isGameEnded: false,
   };
 
   utils = {
     //Function to shuffle the unique id pairs
-    shuffleArray: (array) => {
-      for (let i = array.length - 1; i > 0; i--) {
+    shuffleIds: (arr) => {
+      for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
     },
 
@@ -46,7 +47,7 @@ class MatchGrid {
     },
 
     disableGameBoard: (message) => {
-      clearInterval(this.gameStates.timerId);
+      //clearInterval(this.gameStates.timerId);
       document.querySelector(".game__grey-layer").style.opacity = 0.7;
       document.querySelector(".game__grey-layer").style.zIndex = 10;
       document.querySelector(
@@ -73,7 +74,7 @@ class MatchGrid {
       (el, i) => i + 1
     );
     const uniqueIdPairs = [...uniqueIds, ...uniqueIds];
-    this.utils.shuffleArray(uniqueIdPairs);
+    this.utils.shuffleIds(uniqueIdPairs);
 
     return uniqueIdPairs;
   }
@@ -107,11 +108,13 @@ class MatchGrid {
   }
 
   //Method to start game timer
-  startTimer(initialTime) {
+  startTimer = (initialTime) => {
     let time = initialTime;
     const labelTimer = document.querySelector(".game__timer");
 
     const tick = () => {
+      if (this.gameStates.gamePaused) return;
+
       const min = String(Math.trunc(time / 60)).padStart(2, 0);
       const sec = String(time % 60).padStart(2, 0);
 
@@ -120,40 +123,64 @@ class MatchGrid {
 
       // When 0 seconds, stop timer
       if (time === 0) {
+        this.endGame();
         this.utils.disableGameBoard("Time's up!");
       }
 
       // Decrease 1s
       time--;
-      this.gameStates.pauseTime = time;
+      //this.gameStates.pauseTime = time;
     };
 
     // Call the timer every second
     this.gameStates.timerId = setInterval(tick, 1000);
-  }
+  };
 
   //Method to pause and resume timer
-  pauseResumeTimer() {
-    if (this.gameStates.gamePaused === false) {
+  pauseResumeTimer = (pause = true) => {
+    if (this.gameStates.isGameEnded) return;
+
+    if (!this.gameStates.gamePaused && pause) {
       //If timer is going - pause the timer and disable the activity area
       this.gameStates.gamePaused = true;
       this.utils.disableGameBoard("Paused");
-    } else {
+    }
+
+    if (this.gameStates.gamePaused && !pause) {
       //If timer is paused - resume the timer and enable the activity area
       this.gameStates.gamePaused = false;
-      this.startTimer(this.gameStates.pauseTime);
+      //this.startTimer(this.gameStates.pauseTime);
       document.querySelector(".game__grey-layer").style.opacity = 0;
       document.querySelector(".game__grey-layer").style.zIndex = -1;
     }
-  }
+  };
+
+  resetGameState = () => {
+    this.gameStates.cellsAmount = 0;
+    this.gameStates.selectedCardId = null;
+    this.gameStates.selectedCardThumbId = null;
+    this.gameStates.timerId = 0;
+    this.gameStates.gamePaused = false;
+    this.gameStates.pauseTime = this.time;
+  };
 
   //Method to end the game (clear timer, remove game board)
-  endGame() {
+  endGame = () => {
+    this.gameStates.isGameEnded = true;
+
+    clearInterval(this.gameStates.timerId);
+    this.resetGameState();
+    document.querySelector(".game__timer").textContent = "00:00";
+  };
+
+  reloadGame = () => {
+    this.gameStates.isGameEnded = false;
+
     document.querySelector(".game__container").innerHTML = "";
-    if (this.gameStates.timerId !== 0) {
-      clearInterval(this.gameStates.timerId);
-    }
-  }
+    clearInterval(this.gameStates.timerId);
+    this.resetGameState();
+    document.querySelector(".game__timer").textContent = "00:00";
+  };
 
   //Method to handle click on game card
   handleCardClick(e) {
@@ -197,6 +224,7 @@ class MatchGrid {
           //If all cards are matched - disable the activity area and stop the game
           if (disabled === this.gameStates.cellsAmount) {
             this.utils.disableGameBoard("You won!");
+            this.endGame();
           }
         });
       }, 600);
@@ -223,9 +251,10 @@ class MatchGrid {
 
   //Method to add events to interactive elements
   addEvents() {
-    document
-      .querySelector(".btn-reload")
-      .addEventListener("click", () => this.initGame());
+    document.querySelector(".btn-reload").addEventListener("click", () => {
+      this.reloadGame();
+      this.initGame();
+    });
 
     document.querySelectorAll(".game__card").forEach((el) => {
       el.addEventListener("click", (e) => {
@@ -238,18 +267,17 @@ class MatchGrid {
       });
     });
 
-    // document
-    //   .querySelector(".game__board")
-    //   .addEventListener("mouseleave, mauseenter", () => this.pauseResumeTimer());
+    document
+      .querySelector(".game__board")
+      .addEventListener("mouseleave", () => this.pauseResumeTimer(true));
 
     document
-      .querySelector(".btn-pause")
-      .addEventListener("click", () => this.pauseResumeTimer());
+      .querySelector(".game__board")
+      .addEventListener("mouseenter", () => this.pauseResumeTimer(false));
   }
 
   //Method to start the game
   initGame() {
-    this.endGame();
     this.setTheme();
     this.createGameBoard();
     this.addEvents();
@@ -265,5 +293,5 @@ class MatchGrid {
 // time: Number (ms)
 // theme: String (dark, light)
 
-const gameGrid = new MatchGrid(600, 600, 5, 5, 5, "light");
+const gameGrid = new MatchGrid(600, 600, 5, 5, 300, "light");
 gameGrid.initGame();
