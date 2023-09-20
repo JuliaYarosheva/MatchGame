@@ -7,37 +7,73 @@ class MatchGrid {
     this.rows = rows;
     this.time = time;
     this.theme = theme;
-    this.cellsAmount = 0;
-    this.selectedCardId = null;
-    this.selectedCardThumbId = null;
-    this.timerId = 0;
-    this.gamePaused = false;
-    this.pauseTime = 0;
   }
+
+  gameStates = {
+    cellsAmount: 0,
+    selectedCardId: null,
+    selectedCardThumbId: null,
+    timerId: 0,
+    gamePaused: false,
+    pauseTime: 0,
+  };
+
+  utils = {
+    //Function to shuffle the unique id pairs
+    shuffleArray: (array) => {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    },
+
+    //Function to animate card flip
+    animation: (elem, playing) => {
+      if (playing) return;
+
+      playing = true;
+
+      return anime({
+        targets: elem,
+        scale: [{ value: 1 }, { value: 1.4 }, { value: 1, delay: 150 }],
+        rotateY: { value: "+=180", delay: 100 },
+        easing: "easeInOutSine",
+        duration: 300,
+        complete: function () {
+          playing = false;
+        },
+      });
+    },
+
+    disableGameBoard: (message) => {
+      clearInterval(this.gameStates.timerId);
+      document.querySelector(".game__grey-layer").style.opacity = 0.7;
+      document.querySelector(".game__grey-layer").style.zIndex = 10;
+      document.querySelector(
+        ".game__grey-layer"
+      ).innerHTML = `<h2>${message}</h2>`;
+    },
+  };
 
   //Method to set the game theme
   setTheme() {
     document.querySelector(".game__wrapper").classList.add(this.theme);
   }
 
-  //Method to shuffle the unique id pairs
-  shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  }
-
   //Method to create game matrix
   createGameMatrix() {
     //Get number of game cards
-    this.cellsAmount = this.cols * this.rows;
-    this.cellsAmount % 2 === 1 ? (this.cellsAmount -= 1) : this.cellsAmount;
+    this.gameStates.cellsAmount = this.cols * this.rows;
+    this.gameStates.cellsAmount % 2 === 1
+      ? (this.gameStates.cellsAmount -= 1)
+      : this.gameStates.cellsAmount;
 
     //Get unique id pairs for game cards (game cards / 2), shuffle them in random order
-    const uniqueIds = [...Array(this.cellsAmount / 2)].map((el, i) => i + 1);
+    const uniqueIds = [...Array(this.gameStates.cellsAmount / 2)].map(
+      (el, i) => i + 1
+    );
     const uniqueIdPairs = [...uniqueIds, ...uniqueIds];
-    this.shuffleArray(uniqueIdPairs);
+    this.utils.shuffleArray(uniqueIdPairs);
 
     return uniqueIdPairs;
   }
@@ -84,36 +120,28 @@ class MatchGrid {
 
       // When 0 seconds, stop timer
       if (time === 0) {
-        clearInterval(this.timerId);
-        document.querySelector(".game__grey-layer").style.opacity = 0.7;
-        document.querySelector(".game__grey-layer").style.zIndex = 10;
-        document.querySelector(
-          ".game__grey-layer"
-        ).innerHTML = `<h2>Time's up!</h2>`;
+        this.utils.disableGameBoard("Time's up!");
       }
 
       // Decrease 1s
       time--;
-      this.pauseTime = time;
+      this.gameStates.pauseTime = time;
     };
 
     // Call the timer every second
-    this.timerId = setInterval(tick, 1000);
+    this.gameStates.timerId = setInterval(tick, 1000);
   }
 
   //Method to pause and resume timer
   pauseResumeTimer() {
-    if (this.gamePaused === false) {
+    if (this.gameStates.gamePaused === false) {
       //If timer is going - pause the timer and disable the activity area
-      this.gamePaused = true;
-      clearInterval(this.timerId);
-      document.querySelector(".game__grey-layer").style.opacity = 0.7;
-      document.querySelector(".game__grey-layer").style.zIndex = 10;
-      document.querySelector(".game__grey-layer").innerHTML = `<h2>Paused</h2>`;
+      this.gameStates.gamePaused = true;
+      this.utils.disableGameBoard("Paused");
     } else {
       //If timer is paused - resume the timer and enable the activity area
-      this.gamePaused = false;
-      this.startTimer(this.pauseTime);
+      this.gameStates.gamePaused = false;
+      this.startTimer(this.gameStates.pauseTime);
       document.querySelector(".game__grey-layer").style.opacity = 0;
       document.querySelector(".game__grey-layer").style.zIndex = -1;
     }
@@ -122,33 +150,15 @@ class MatchGrid {
   //Method to end the game (clear timer, remove game board)
   endGame() {
     document.querySelector(".game__container").innerHTML = "";
-    if (this.timerId !== 0) {
-      clearInterval(this.timerId);
+    if (this.gameStates.timerId !== 0) {
+      clearInterval(this.gameStates.timerId);
     }
-  }
-
-  //Method to animate card flip
-  animation(elem, playing) {
-    if (playing) return;
-
-    playing = true;
-
-    return anime({
-      targets: elem,
-      scale: [{ value: 1 }, { value: 1.4 }, { value: 1, delay: 150 }],
-      rotateY: { value: "+=180", delay: 100 },
-      easing: "easeInOutSine",
-      duration: 300,
-      complete: function () {
-        playing = false;
-      },
-    });
   }
 
   //Method to handle click on game card
   handleCardClick(e) {
     //Animate the card flip
-    const animation = this.animation(
+    const animation = this.utils.animation(
       e.currentTarget.querySelector(".game__card_inner"),
       false
     );
@@ -164,16 +174,16 @@ class MatchGrid {
 
   //Method to check if cards are matching and handle result
   checkCardsMatch(currentId, selectedCardThumbId) {
-    if (this.selectedCardId === null) {
-      this.selectedCardId = currentId;
-      this.selectedCardThumbId = selectedCardThumbId;
+    if (this.gameStates.selectedCardId === null) {
+      this.gameStates.selectedCardId = currentId;
+      this.gameStates.selectedCardThumbId = selectedCardThumbId;
     } else if (
       //If cards are matching, disable them and remove active state
-      this.selectedCardId === currentId &&
-      this.selectedCardThumbId !== selectedCardThumbId
+      this.gameStates.selectedCardId === currentId &&
+      this.gameStates.selectedCardThumbId !== selectedCardThumbId
     ) {
       const elements = document.querySelectorAll(
-        '[data-id="' + this.selectedCardId + '"]'
+        '[data-id="' + this.gameStates.selectedCardId + '"]'
       );
 
       setTimeout(() => {
@@ -185,18 +195,13 @@ class MatchGrid {
           const disabled = document.querySelectorAll(".disabled").length;
 
           //If all cards are matched - disable the activity area and stop the game
-          if (disabled === this.cellsAmount) {
-            clearInterval(this.timerId);
-            document.querySelector(".game__grey-layer").style.opacity = 0.7;
-            document.querySelector(".game__grey-layer").style.zIndex = 10;
-            document.querySelector(
-              ".game__grey-layer"
-            ).innerHTML = `<h2>You won!</h2>`;
+          if (disabled === this.gameStates.cellsAmount) {
+            this.utils.disableGameBoard("You won!");
           }
         });
       }, 600);
-      this.selectedCardId = null;
-      this.selectedCardThumbId = null;
+      this.gameStates.selectedCardId = null;
+      this.gameStates.selectedCardThumbId = null;
     } else {
       //If cards are NOT matching, flip them back and remove active state
       const elements = document.querySelectorAll(".active");
@@ -204,15 +209,15 @@ class MatchGrid {
       setTimeout(() => {
         elements.forEach((el) => {
           el.classList.remove("active");
-          const animation = this.animation(
+          const animation = this.utils.animation(
             el.querySelector(".game__card_inner"),
             false
           );
           animation.play();
         });
       }, 600);
-      this.selectedCardId = null;
-      this.selectedCardThumbId = null;
+      this.gameStates.selectedCardId = null;
+      this.gameStates.selectedCardThumbId = null;
     }
   }
 
@@ -234,7 +239,7 @@ class MatchGrid {
     });
 
     // document
-    //   .querySelector(".game__container")
+    //   .querySelector(".game__board")
     //   .addEventListener("mouseleave, mauseenter", () => this.pauseResumeTimer());
 
     document
@@ -244,11 +249,11 @@ class MatchGrid {
 
   //Method to start the game
   initGame() {
-    this.setTheme();
     this.endGame();
+    this.setTheme();
     this.createGameBoard();
-    this.startTimer(this.time);
     this.addEvents();
+    this.startTimer(this.time);
   }
 }
 
@@ -260,5 +265,5 @@ class MatchGrid {
 // time: Number (ms)
 // theme: String (dark, light)
 
-const gameGrid = new MatchGrid(600, 600, 5, 5, 600, "light");
+const gameGrid = new MatchGrid(600, 600, 5, 5, 5, "light");
 gameGrid.initGame();
