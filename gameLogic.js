@@ -12,6 +12,7 @@ class MatchGrid {
     this.selectedCardThumbId = null;
     this.timerId = 0;
     this.gamePaused = false;
+    this.pauseTime = 0;
   }
 
   //Method to set the game theme
@@ -70,11 +71,11 @@ class MatchGrid {
   }
 
   //Method to start game timer
-  startTimer() {
-    let time = this.time;
+  startTimer(initialTime) {
+    let time = initialTime;
     const labelTimer = document.querySelector(".game__timer");
 
-    const tick = function () {
+    const tick = () => {
       const min = String(Math.trunc(time / 60)).padStart(2, 0);
       const sec = String(time % 60).padStart(2, 0);
 
@@ -93,10 +94,10 @@ class MatchGrid {
 
       // Decrease 1s
       time--;
+      this.pauseTime = time;
     };
 
     // Call the timer every second
-    tick();
     this.timerId = setInterval(tick, 1000);
   }
 
@@ -112,6 +113,7 @@ class MatchGrid {
     } else {
       //If timer is paused - resume the timer and enable the activity area
       this.gamePaused = false;
+      this.startTimer(this.pauseTime);
       document.querySelector(".game__grey-layer").style.opacity = 0;
       document.querySelector(".game__grey-layer").style.zIndex = -1;
     }
@@ -245,7 +247,7 @@ class MatchGrid {
     this.setTheme();
     this.endGame();
     this.createGameBoard();
-    this.startTimer();
+    this.startTimer(this.time);
     this.addEvents();
   }
 }
