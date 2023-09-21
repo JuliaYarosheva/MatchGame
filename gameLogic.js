@@ -170,7 +170,6 @@ class MatchGrid {
 
     clearInterval(this.gameStates.timerId);
     this.resetGameState();
-    document.querySelector(".game__timer").textContent = "00:00";
   };
 
   reloadGame = () => {
