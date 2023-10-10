@@ -39,7 +39,7 @@ class MatchGrid {
         scale: [{ value: 1 }, { value: 1.4 }, { value: 1, delay: 150 }],
         rotateY: { value: "+=180", delay: 100 },
         easing: "easeInOutSine",
-        duration: 300,
+        duration: 50,
         complete: function () {
           playing = false;
         },
